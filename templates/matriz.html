@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block title %}Matriz de Indicadores - ASD FY2025{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Matriz de Indicadores</h1>
+        <div class="d-flex align-items-center">
+            <form method="GET" action="{{ url_for('matriz') }}" class="d-flex align-items-center">
+                <label for="anio" class="me-2">Año:</label>
+                <select name="anio" id="anio" class="form-select me-2" onchange="this.form.submit()">
+                    {% for a in range(2023, 2030) %}
+                        <option value="{{ a }}" {% if a == anio %}selected{% endif %}>{{ a }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+            <button class="btn btn-outline-secondary ms-2" onclick="window.print()">
+                <i class="fas fa-print"></i> Imprimir
+            </button>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="table table-bordered table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>PROCESO /TIPO DE INDICADOR</th>
+                    <th>CRITERIO DE EVALUACIÓN</th>
+                    <th colspan="3">MES</th>
+                    <th>YTD</th>
+                </tr>
+                <tr>
+                    <th>KPI Proceso</th>
+                    <th>Meta o Límite</th>
+                    <th>January</th>
+                    <th>February</th>
+                    <th>March</th>
+                    <th>YTD</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for proceso_id, proceso_data in data.items() %}
+                <tr class="table-secondary">
+                    <td colspan="6"><strong>{{ proceso_data.nombre }}</strong></td>
+                </tr>
+                    {% for indicador_id, indicador_data in proceso_data.indicadores.items() %}
+                    <tr>
+                        <td>{{ indicador_data.nombre }}</td>
+                        <td>
+                            {% if indicador_data.metas.get(1) %}
+                                {{ indicador_data.metas.get(1) }}
+                            {% elif indicador_data.metas.get(2) %}
+                                {{ indicador_data.metas.get(2) }}
+                            {% elif indicador_data.metas.get(3) %}
+                                {{ indicador_data.metas.get(3) }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td class="{% if indicador_data.calificaciones.get(1) %}status-{{ indicador_data.calificaciones.get(1)|int }}{% endif %}">
+                            {{ indicador_data.valores.get(1, '-') }}
+                        </td>
+                        <td class="{% if indicador_data.calificaciones.get(2) %}status-{{ indicador_data.calificaciones.get(2)|int }}{% endif %}">
+                            {{ indicador_data.valores.get(2, '-') }}
+                        </td>
+                        <td class="{% if indicador_data.calificaciones.get(3) %}status-{{ indicador_data.calificaciones.get(3)|int }}{% endif %}">
+                            {{ indicador_data.valores.get(3, '-') }}
+                        </td>
+                        <td>
+                            {% set ytd_valores = [] %}
+                            {% for mes in range(1, 4) %}
+                                {% if indicador_data.valores.get(mes) %}
+                                    {% do ytd_valores.append(indicador_data.valores.get(mes)) %}
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if ytd_valores|length > 0 %}
+                                {{ (ytd_valores|sum / ytd_valores|length)|round(2) }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Meta</td>
+                        <td>{{ indicador_data.metas.get(1, '-') }}</td>
+                        <td>{{ indicador_data.metas.get(2, '-') }}</td>
+                        <td>{{ indicador_data.metas.get(3, '-') }}</td>
+                        <td>
+                            {% set ytd_metas = [] %}
+                            {% for mes in range(1, 4) %}
+                                {% if indicador_data.metas.get(mes) %}
+                                    {% do ytd_metas.append(indicador_data.metas.get(mes)) %}
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if ytd_metas|length > 0 %}
+                                {{ (ytd_metas|sum / ytd_metas|length)|round(2) }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Indicador</td>
+                        <td>{{ indicador_data.valores.get(1, '') }}</td>
+                        <td>{{ indicador_data.valores.get(2, '') }}</td>
+                        <td>{{ indicador_data.valores.get(3, '') }}</td>
+                        <td>
+                            {% set ytd_valores = [] %}
+                            {% for mes in range(1, 4) %}
+                                {% if indicador_data.valores.get(mes) %}
+                                    {% do ytd_valores.append(indicador_data.valores.get(mes)) %}
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if ytd_valores|length > 0 %}
+                                {{ (ytd_valores|sum / ytd_valores|length)|round(2) }}
+                            {% else %}
+                                
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add any JavaScript needed for the matrix view
+    });
+</script>
+{% endblock %}

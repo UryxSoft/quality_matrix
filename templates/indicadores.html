@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Indicadores - Matriz de Indicadores ASD FY2025{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Indicadores</h1>
+        <div>
+            <a href="{{ url_for('indicador_nuevo') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i>Nuevo Indicador
+            </a>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            Filtrar por Proceso
+        </div>
+        <div class="card-body">
+            <select id="filtro-proceso" class="form-select">
+                <option value="0">Todos los procesos</option>
+                {% for proceso in indicadores|groupby('proceso_id')|sort(attribute='grouper') %}
+                    <option value="{{ proceso.grouper }}">{{ proceso.list[0].proceso.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover" id="tabla-indicadores">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Unidad</th>
+                    <th>Proceso</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for indicador in indicadores %}
+                <tr class="proceso-{{ indicador.proceso_id }}">
+                    <td>{{ indicador.id }}</td>
+                    <td>{{ indicador.nombre }}</td>
+                    <td>{{ indicador.unidad }}</td>
+                    <td>{{ indicador.proceso.nombre }}</td>
+                    <td>
+                        <div class="btn-group">
+                            <a href="{{ url_for('indicador_detalle', indicador_id=indicador.id) }}" class="btn btn-sm btn-info">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ url_for('meta_nueva', indicador_id=indicador.id) }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-bullseye"></i>
+                            </a>
+                            <a href="{{ url_for('valor_nuevo', indicador_id=indicador.id) }}" class="btn btn-sm btn-success">
+                                <i class="fas fa-chart-line"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const filtroProceso = document.getElementById('filtro-proceso');
+        
+        filtroProceso.addEventListener('change', function() {
+            const procesoId = parseInt(this.value);
+            const rows = document.querySelectorAll('#tabla-indicadores tbody tr');
+            
+            rows.forEach(row => {
+                if (procesoId === 0 || row.classList.contains(`proceso-${procesoId}`)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

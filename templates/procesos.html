@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Procesos - Matriz de Indicadores ASD FY2025{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Procesos</h1>
+        <div>
+            <a href="{{ url_for('indicador_nuevo') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i>Nuevo Indicador
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for proceso in procesos %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">{{ proceso.nombre }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">{{ proceso.descripcion }}</p>
+                    <h6>Indicadores:</h6>
+                    <ul class="list-group list-group-flush mb-3">
+                        {% for indicador in proceso.indicadores %}
+                        <li class="list-group-item">
+                            <a href="{{ url_for('indicador_detalle', indicador_id=indicador.id) }}">
+                                {{ indicador.nombre }}
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="list-group-item text-muted">No hay indicadores para este proceso</li>
+                        {% endfor %}
+                    </ul>
+                    <a href="{{ url_for('proceso_detalle', proceso_id=proceso.id) }}" class="btn btn-outline-primary">Ver Detalles</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

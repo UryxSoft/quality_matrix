@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ indicador.nombre }} - Matriz de Indicadores ASD FY2025{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ indicador.nombre }}</h1>
+        <div class="d-flex">
+            <form method="GET" action="{{ url_for('indicador_detalle', indicador_id=indicador.id) }}" class="d-flex align-items-center me-2">
+                <label for="anio" class="me-2">Año:</label>
+                <select name="anio" id="anio" class="form-select" onchange="this.form.submit()">
+                    {% for a in range(2023, 2030) %}
+                        <option value="{{ a }}" {% if a == anio %}selected{% endif %}>{{ a }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+            <div class="btn-group">
+                <a href="{{ url_for('meta_nueva', indicador_id=indicador.id, anio=anio) }}" class="btn btn-primary">
+                    <i class="fas fa-bullseye me-1"></i>Definir Meta
+                </a>
+                <a href="{{ url_for('valor_nuevo', indicador_id=indicador.id, anio=anio) }}" class="btn btn-success">
+                    <i class="fas fa-chart-line me-1"></i>Registrar Valor
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Información del Indicador</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">ID:</dt>
+                        <dd class="col-sm-8">{{ indicador.id }}</dd>
+                        
+                        <dt class="col-sm-4">Nombre:</dt>
+                        <dd class="col-sm-8">{{ indicador.nombre }}</dd>
+                        
+                        <dt class="col-sm-4">Descripción:</dt>
+                        <dd class="col-sm-8">{{ indicador.descripcion or 'Sin descripción' }}</dd>
+                        
+                        <dt class="col-sm-4">Unidad:</dt>
+                        <dd class="col-sm-8">{{ indicador.unidad }}</dd>
+                        
+                        <dt class="col-sm-4">Proceso:</dt>
+                        <dd class="col-sm-8">
+                            <a href="{{ url_for('proceso_detalle', proceso_id=indicador.proceso_id) }}">
+                                {{ indicador.proceso.nombre }}
+                            </a>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Gráfico ({{ anio }})</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="indicador-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Datos del Indicador ({{ anio }})</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Mes</th>
+                                    <th>Meta</th>
+                                    <th>Valor</th>
+                                    <th>Calificación</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for mes, nombre_mes in zip(meses, nombres_meses) %}
+                                <tr>
+                                    <td>{{ nombre_mes }}</td>
+                                    <td>
+                                        {% if metas.get(mes) %}
+                                            {{ metas.get(mes) }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="{% if calificaciones.get(mes) %}status-{{ calificaciones.get(mes)|int }}{% endif %}">
+                                        {% if valores.get(mes) %}
+                                            {{ valores.get(mes) }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if calificaciones.get(mes) %}
+                                            {{ calificaciones.get(mes) }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('meta_nueva', indicador_id=indicador.id, anio=anio, mes=mes) }}" class="btn btn-outline-primary">
+                                                <i class="fas fa-bullseye"></i>
+                                            </a>
+                                            <a href="{{ url_for('valor_nuevo', indicador_id=indicador.id, anio=anio, mes=mes) }}" class="btn btn-outline-success">
+                                                <i class="fas fa-chart-line"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                <tr class="table-secondary">
+                                    <td><strong>YTD</strong></td>
+                                    <td>
+                                        {% set ytd_metas = [] %}
+                                        {% for mes in meses %}
+                                            {% if metas.get(mes) %}
+                                                {% do ytd_metas.append(metas.get(mes)) %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% if ytd_metas|length > 0 %}
+                                            {{ (ytd_metas|sum / ytd_metas|length)|round(2) }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% set ytd_valores = [] %}
+                                        {% for mes in meses %}
+                                            {% if valores.get(mes) %}
+                                                {% do ytd_valores.append(valores.get(mes)) %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% if ytd_valores|length > 0 %}
+                                            {{ (ytd_valores|sum / ytd_valores|length)|round(2) }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% set ytd_calificaciones = [] %}
+                                        {% for mes in meses %}
+                                            {% if calificaciones.get(mes) %}
+                                                {% do ytd_calificaciones.append(calificaciones.get(mes)) %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% if ytd_calificaciones|length > 0 %}
+                                            {{ (ytd_calificaciones|sum / ytd_calificaciones|length)|round(2) }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('indicador-chart').getContext('2d');
+        const anio = {% if anio %}{{ anio }}{% else %}new Date().getFullYear(){% endif %};
+        
+        fetch(`/api/chart_data/{{ indicador.id }}/${anio}`)
+            .then(response => response.json())
+            .then(data => {
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: data.datasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: false
+                            }
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: data.nombre_indicador + (data.unidad ? ` (${data.unidad})` : '')
+                            },
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error al cargar datos:', error);
+                document.getElementById('indicador-chart').parentNode.innerHTML = 
+                    '<div class="alert alert-danger">Error al cargar los datos del gráfico</div>';
+            });
+    });
+</script>
+{% endblock %}

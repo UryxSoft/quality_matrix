@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Inicio - Matriz de Indicadores ASD FY2025{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="card-title text-center">
+                        <i class="fas fa-chart-line me-2"></i>Matriz de Indicadores ASD FY2025
+                    </h1>
+                    <p class="card-text text-center lead">
+                        Sistema de gestión y visualización de indicadores clave de desempeño (KPIs) para los procesos de la organización.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-table text-primary me-2"></i>Matriz de Indicadores
+                    </h5>
+                    <p class="card-text">
+                        Visualiza la matriz completa de indicadores por proceso, con metas y valores reales.
+                    </p>
+                    <a href="{{ url_for('matriz') }}" class="btn btn-primary">Ver Matriz</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-chart-bar text-success me-2"></i>Gráficos
+                    </h5>
+                    <p class="card-text">
+                        Visualiza gráficamente el comportamiento de los indicadores a lo largo del tiempo.
+                    </p>
+                    <a href="{{ url_for('charts') }}" class="btn btn-success">Ver Gráficos</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-cogs text-secondary me-2"></i>Gestión
+                    </h5>
+                    <p class="card-text">
+                        Administra los procesos, indicadores, metas y valores del sistema.
+                    </p>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('procesos_lista') }}" class="btn btn-secondary">Procesos</a>
+                        <a href="{{ url_for('indicadores_lista') }}" class="btn btn-secondary">Indicadores</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}Nuevo Indicador - Matriz de Indicadores ASD FY2025{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Nuevo Indicador</h1>
+        <div>
+            <a href="{{ url_for('indicadores_lista') }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-1"></i>Volver a Indicadores
+            </a>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Información del Indicador</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('indicador_nuevo') }}">
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label">Nombre del Indicador:</label>
+                            <input type="text" name="nombre" id="nombre" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="descripcion" class="form-label">Descripción:</label>
+                            <textarea name="descripcion" id="descripcion" class="form-control" rows="3"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="unidad" class="form-label">Unidad de Medida:</label>
+                            <select name="unidad" id="unidad" class="form-select" required>
+                                <option value="">Seleccionar unidad...</option>
+                                <option value="%">Porcentaje (%)</option>
+                                <option value="cantidad">Cantidad (unidades)</option>
+                                <option value="$">Dinero ($)</option>
+                                <option value="tiempo">Tiempo (horas/días)</option>
+                                <option value="índice">Índice</option>
+                                <option value="UFC">UFC (Unidades Formadoras de Colonias)</option>
+                                <option value="bool">Presencia/Ausencia</option>
+                                <option value="custom">Otra (personalizada)</option>
+                            </select>
+                        </div>
+
+                        <div id="unidad-custom-container" class="mb-3 d-none">
+                            <label for="unidad-custom" class="form-label">Unidad Personalizada:</label>
+                            <input type="text" id="unidad-custom" name="unidad-custom" class="form-control">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="proceso_id" class="form-label">Proceso:</label>
+                            <select name="proceso_id" id="proceso_id" class="form-select" required>
+                                <option value="">Seleccionar proceso...</option>
+                                {% for proceso in procesos %}
+                                <option value="{{ proceso.id }}">{{ proceso.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Guardar Indicador</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const unidadSelect = document.getElementById('unidad');
+        const unidadCustomContainer = document.getElementById('unidad-custom-container');
+        const unidadCustomInput = document.getElementById('unidad-custom');
+        
+        // Mostrar/ocultar campo de unidad personalizada
+        unidadSelect.addEventListener('change', function() {
+            if (this.value === 'custom') {
+                unidadCustomContainer.classList.remove('d-none');
+                unidadCustomInput.setAttribute('required', 'required');
+            } else {
+                unidadCustomContainer.classList.add('d-none');
+                unidadCustomInput.removeAttribute('required');
+            }
+        });
+        
+        // Manejar el envío del formulario
+        document.querySelector('form').addEventListener('submit', function(e) {
+            if (unidadSelect.value === 'custom') {
+                e.preventDefault();
+                // Usar el valor personalizado como unidad
+                const customValue = unidadCustomInput.value.trim();
+                if (customValue) {
+                    unidadSelect.value = customValue;
+                    this.submit();
+                } else {
+                    alert('Por favor, ingrese una unidad personalizada.');
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

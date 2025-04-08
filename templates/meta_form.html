@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Definir Meta - Matriz de Indicadores ASD FY2025{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Definir Meta</h1>
+        <div>
+            {% if indicador %}
+            <a href="{{ url_for('indicador_detalle', indicador_id=indicador.id, anio=anio) }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-1"></i>Volver al Indicador
+            </a>
+            {% else %}
+            <a href="{{ url_for('indicadores_lista') }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-1"></i>Volver a Indicadores
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        {% if indicador %}
+                        Definir Meta para {{ indicador.nombre }}
+                        {% else %}
+                        Definir Meta
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('meta_nueva') }}">
+                        <div class="mb-3">
+                            <label for="indicador_id" class="form-label">Indicador:</label>
+                            {% if indicador %}
+                            <input type="hidden" name="indicador_id" value="{{ indicador.id }}">
+                            <input type="text" class="form-control" value="{{ indicador.nombre }}" readonly>
+                            {% else %}
+                            <select name="indicador_id" id="indicador_id" class="form-select" required>
+                                <option value="">Seleccionar indicador...</option>
+                                {% for ind in indicadores %}
+                                <option value="{{ ind.id }}">{{ ind.nombre }} ({{ ind.proceso.nombre }})</option>
+                                {% endfor %}
+                            </select>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="anio" class="form-label">Año:</label>
+                                <select name="anio" id="anio" class="form-select" required>
+                                    {% for a in range(2023, 2030) %}
+                                    <option value="{{ a }}" {% if a == anio %}selected{% endif %}>{{ a }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="mes" class="form-label">Mes:</label>
+                                <select name="mes" id="mes" class="form-select" required>
+                                    <option value="1" {% if mes == 1 %}selected{% endif %}>Enero</option>
+                                    <option value="2" {% if mes == 2 %}selected{% endif %}>Febrero</option>
+                                    <option value="3" {% if mes == 3 %}selected{% endif %}>Marzo</option>
+                                    <option value="4" {% if mes == 4 %}selected{% endif %}>Abril</option>
+                                    <option value="5" {% if mes == 5 %}selected{% endif %}>Mayo</option>
+                                    <option value="6" {% if mes == 6 %}selected{% endif %}>Junio</option>
+                                    <option value="7" {% if mes == 7 %}selected{% endif %}>Julio</option>
+                                    <option value="8" {% if mes == 8 %}selected{% endif %}>Agosto</option>
+                                    <option value="9" {% if mes == 9 %}selected{% endif %}>Septiembre</option>
+                                    <option value="10" {% if mes == 10 %}selected{% endif %}>Octubre</option>
+                                    <option value="11" {% if mes == 11 %}selected{% endif %}>Noviembre</option>
+                                    <option value="12" {% if mes == 12 %}selected{% endif %}>Diciembre</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="valor" class="form-label">Valor de la Meta:</label>
+                            <div class="input-group">
+                                <input type="number" name="valor" id="valor" class="form-control" step="0.01" required>
+                                <span class="input-group-text">
+                                    {% if indicador %}
+                                    {{ indicador.unidad }}
+                                    {% else %}
+                                    <span id="unidad-placeholder">Unidad</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Guardar Meta</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if not indicador %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const indicadorSelect = document.getElementById('indicador_id');
+        const unidadPlaceholder = document.getElementById('unidad-placeholder');
+        
+        // Almacenar las unidades de los indicadores
+        const unidades = {};
+        {% for ind in indicadores %}
+        unidades[{{ ind.id }}] = "{{ ind.unidad }}";
+        {% endfor %}
+        
+        // Actualizar la unidad cuando cambia el indicador seleccionado
+        indicadorSelect.addEventListener('change', function() {
+            const indicadorId = parseInt(this.value);
+            if (indicadorId && unidades[indicadorId]) {
+                unidadPlaceholder.textContent = unidades[indicadorId];
+            } else {
+                unidadPlaceholder.textContent = 'Unidad';
+            }
+        });
+    });
+</script>
+{% endif %}
+{% endblock %}
